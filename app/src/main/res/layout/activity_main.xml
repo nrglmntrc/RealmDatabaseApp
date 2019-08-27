@@ -47,7 +47,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Kaydet"
-                android:onClick="addPerson"
+                android:onClick="btnClickAddPerson"
                 />
 
             <Button
@@ -56,7 +56,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Vazgeç"
-                android:onClick="dissmisChange"
+                android:onClick="btnClickDissmisChange"
                 />
 
         </LinearLayout>

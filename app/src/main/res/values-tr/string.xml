@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Realm Database Uygulaması</string>
+    <string name="menu_edit">Düzenle</string>
+    <string name="menu_delete">Sil</string>
+</resources>
