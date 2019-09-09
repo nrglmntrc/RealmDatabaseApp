@@ -47,7 +47,9 @@
                     android:layout_weight="1"
                     android:gravity="right"
                     android:text="&#8942;"
-                    android:textAppearance="?android:textAppearanceLarge" />
+                    android:textAppearance="?android:textAppearanceLarge"
+                    android:textColor="@color/cardview_shadow_start_color"
+                    />
 
             </LinearLayout>
 

@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
@@ -45,13 +46,12 @@ public class MainActivity extends AppCompatActivity implements IClickListener {
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
-        customAdapter = new CustomAdapter(context, personList, MainActivity.this);
+        customAdapter = new CustomAdapter(getApplicationContext(),personList,MainActivity.this);
         recyclerView.setAdapter(customAdapter);
 
         refreshList();
 
     }
-
 
     private void Init() {
         etName = findViewById(R.id.personNameEdit);
@@ -65,14 +65,10 @@ public class MainActivity extends AppCompatActivity implements IClickListener {
 
     public void btnClickAddPerson(View view) {
         if(btnAddPerson.getText().toString().equalsIgnoreCase("KAYDET")){
-
-
             if(checkFields()){
-
                 realm.executeTransactionAsync(new Realm.Transaction() {
                     @Override
                     public void execute(Realm bgRealm) {
-
                         Number maxId = bgRealm.where(PersonTable.class).max("id");
                         int nextId = (maxId == null) ? 1 : maxId.intValue() + 1;
                         PersonTable personTable = bgRealm.createObject(PersonTable.class,nextId);
@@ -80,25 +76,24 @@ public class MainActivity extends AppCompatActivity implements IClickListener {
                         personTable.setSurname(etSurname.getText().toString());
                         personTable.setDepartment(etDepartment.getText().toString());
                         personTable.setAge(Integer.parseInt(etAge.getText().toString()));
-
                     }
                 }, new Realm.Transaction.OnSuccess() {
                     @Override
                     public void onSuccess() {
-                        Toast.makeText(MainActivity.this, "Kayıt başarılı bir şekilde eklendi.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Kayıt başarılı bir şekilde eklendi.", Toast.LENGTH_LONG).show();
                         refreshList();
                         clearAllFields();
                     }
                 }, new Realm.Transaction.OnError() {
                     @Override
                     public void onError(Throwable error) {
-                        Toast.makeText(MainActivity.this, ""+error.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, ""+error.getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
 
 
             }else{
-                Toast.makeText(MainActivity.this, "Gerekli alanları giriniz!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, "Gerekli alanları giriniz!", Toast.LENGTH_LONG).show();
             }
 
 
@@ -109,19 +104,17 @@ public class MainActivity extends AppCompatActivity implements IClickListener {
                 realm.executeTransactionAsync(new Realm.Transaction() {
                     @Override
                     public void execute(Realm bgRealm) {
-
-                        RealmResults<PersonTable> realmResults = Realm.getDefaultInstance().where(PersonTable.class).findAll();
+                        RealmResults<PersonTable> realmResults = bgRealm.where(PersonTable.class).findAll();
                         final PersonTable updateTable = realmResults.get(pos);
                         updateTable.setName(etName.getText().toString());
                         updateTable.setSurname(etSurname.getText().toString());
                         updateTable.setDepartment(etDepartment.getText().toString());
                         updateTable.setAge(Integer.parseInt(etAge.getText().toString()));
-
                     }
                 }, new Realm.Transaction.OnSuccess() {
                     @Override
                     public void onSuccess() {
-                        Toast.makeText(MainActivity.this, "Kayıt başarılı bir şekilde güncellendi.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Kayıt başarılı bir şekilde güncellendi.", Toast.LENGTH_LONG).show();
                         refreshList();
                         clearAllFields();
                         btnAddPerson.setText("Kaydet");
@@ -130,13 +123,16 @@ public class MainActivity extends AppCompatActivity implements IClickListener {
                 }, new Realm.Transaction.OnError() {
                     @Override
                     public void onError(Throwable error) {
-                        Toast.makeText(MainActivity.this, ""+error.getMessage(), Toast.LENGTH_SHORT).show();
+                       Log.e("UpdateRealm",error.getMessage());
+                        Toast.makeText(context, "Düzenleme İşlemi Başarısız", Toast.LENGTH_LONG).show();
                     }
                 });
             }
+            else{
+                Toast.makeText(MainActivity.this, "Gerekli alanları giriniz!", Toast.LENGTH_LONG).show();
+            }
         }
     }
-
 
     private void clearAllFields(){
         etName.setText("");
@@ -177,7 +173,7 @@ public class MainActivity extends AppCompatActivity implements IClickListener {
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()){
                     case R.id.editPersonItem:
-                        updatePerson(position);
+                        updateForActivity(position);
                         break;
                     case R.id.deletePersonItem:
                         deletePerson(position);
@@ -187,9 +183,9 @@ public class MainActivity extends AppCompatActivity implements IClickListener {
             }
         });
         popupMenu.show();
-    }
+}
 
-    private void updatePerson(int _position){
+    private void updateForActivity(int _position){
         RealmResults<PersonTable> realmResults=realm.where(PersonTable.class).findAll();
         final PersonTable updatePerson=realmResults.get(_position);
         fillAllFields(updatePerson.getName(),updatePerson.getSurname(),updatePerson.getDepartment(),String.valueOf(updatePerson.getAge()));
@@ -198,16 +194,29 @@ public class MainActivity extends AppCompatActivity implements IClickListener {
         this.pos=_position;
     }
 
-    private void deletePerson(final int _position){
+    private void deletePerson(final int position){
         realm.executeTransactionAsync(new Realm.Transaction() {
             @Override
-            public void execute(Realm realm) {
-                PersonTable deletePerson=personList.get(_position);
+            public void execute(Realm bgRealm) {
+                RealmResults<PersonTable> realmResults = bgRealm.where(PersonTable.class).findAll();
+                final PersonTable deletePerson = realmResults.get(position);
                 deletePerson.deleteFromRealm();
+            }
+        }, new Realm.Transaction.OnSuccess() {
+            @Override
+            public void onSuccess() {
+                Toast.makeText(MainActivity.this, "Kayıt Silindi.", Toast.LENGTH_LONG).show();
                 refreshList();
+            }
+        }, new Realm.Transaction.OnError() {
+            @Override
+            public void onError(Throwable error) {
+                Log.e("DeleteRealm",error.getMessage());
+                Toast.makeText(context, "Silme İşlemi Başarısız", Toast.LENGTH_LONG).show();
             }
         });
     }
+
 
 
     public void btnClickDissmisChange(View view) {
@@ -215,6 +224,8 @@ public class MainActivity extends AppCompatActivity implements IClickListener {
         btnAddPerson.setText("Kaydet");
         btnDismiss.setVisibility(View.GONE);
     }
+
+
 
 
 }

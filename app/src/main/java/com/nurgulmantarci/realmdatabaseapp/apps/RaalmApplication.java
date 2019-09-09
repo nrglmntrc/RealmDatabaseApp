@@ -14,4 +14,8 @@ public class RaalmApplication extends Application {
         RealmConfiguration configuration = new RealmConfiguration.Builder().name("nurgul.realm").deleteRealmIfMigrationNeeded().build();
         Realm.setDefaultConfiguration(configuration);
     }
+
+
+
+
 }
