@@ -195,24 +195,33 @@ public class MainActivity extends AppCompatActivity implements IClickListener {
     }
 
     private void deletePerson(final int position){
-        realm.executeTransactionAsync(new Realm.Transaction() {
+//        realm.executeTransactionAsync(new Realm.Transaction() {
+//            @Override
+//            public void execute(Realm bgRealm) {
+//                RealmResults<PersonTable> realmResults = bgRealm.where(PersonTable.class).findAll();
+//                final PersonTable deletePerson = realmResults.get(position);
+//                deletePerson.deleteFromRealm();
+//            }
+//        }, new Realm.Transaction.OnSuccess() {
+//            @Override
+//            public void onSuccess() {
+//                Toast.makeText(MainActivity.this, "Kayıt Silindi.", Toast.LENGTH_LONG).show();
+//                refreshList();
+//            }
+//        }, new Realm.Transaction.OnError() {
+//            @Override
+//            public void onError(Throwable error) {
+//                Log.e("DeleteRealm",error.getMessage());
+//                Toast.makeText(context, "Silme İşlemi Başarısız", Toast.LENGTH_LONG).show();
+//            }
+//        });
+        
+        realm.executeTransaction(new Realm.Transaction() {
             @Override
-            public void execute(Realm bgRealm) {
-                RealmResults<PersonTable> realmResults = bgRealm.where(PersonTable.class).findAll();
-                final PersonTable deletePerson = realmResults.get(position);
-                deletePerson.deleteFromRealm();
-            }
-        }, new Realm.Transaction.OnSuccess() {
-            @Override
-            public void onSuccess() {
-                Toast.makeText(MainActivity.this, "Kayıt Silindi.", Toast.LENGTH_LONG).show();
+            public void execute(Realm realm) {
+                PersonTable deleteTable=personList.get(position);
+                deleteTable.deleteFromRealm();
                 refreshList();
-            }
-        }, new Realm.Transaction.OnError() {
-            @Override
-            public void onError(Throwable error) {
-                Log.e("DeleteRealm",error.getMessage());
-                Toast.makeText(context, "Silme İşlemi Başarısız", Toast.LENGTH_LONG).show();
             }
         });
     }
